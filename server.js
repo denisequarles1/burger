@@ -26,6 +26,6 @@ var routes = require("./controllers/burgers_controllers.js");
 
 app.use(routes);
 
-app.listen(PORT, function() {
+app.listen(process.env.PORT, function() {
   console.log("App now listening at localhost:" + PORT);
 });
