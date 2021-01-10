@@ -1,31 +1,31 @@
 var express = require("express");
-var bodyParser = require("body-parser");
 
-var PORT = process.env.PORT || 3000;
+var PORT = process.env.PORT || 8080;
 
 var app = express();
 
 // Serve static content for the app from the "public" directory in the application directory.
-//adding __dirname + to public is what allowed me access to the images in assets/img folder
-app.use(express.static(__dirname + "/public"));
+app.use(express.static("public"));
+// app.use(express.static("assets/images")); 
 
-// parse application/x-www-form-urlencoded
-app.use(bodyParser.urlencoded({ extended: false }));
 
-// parse application/json
-app.use(bodyParser.json());
+// Parse application body
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 
 // Set Handlebars.
 var exphbs = require("express-handlebars");
-//sets main.handlebars as the default layout and our view engine as handlebar
+
 app.engine("handlebars", exphbs({ defaultLayout: "main" }));
 app.set("view engine", "handlebars");
 
-//import routes and give the server access to them
-var routes = require("./controllers/burgers_controllers.js");
+// Import routes and give the server access to them.
+var routes = require("./controllers/burgersController.js");
 
 app.use(routes);
 
+// Start our server so that it can begin listening to client requests.
 app.listen(PORT, function() {
-  console.log("App now listening at localhost:" + PORT);
+  // Log (server-side) when our server has started
+  console.log("Server listening on: http://localhost:" + PORT);
 });
