@@ -7,8 +7,12 @@
 * [Portfolio Link](#portfolio)
 
 ## Description 
-This application allows you to create a burger logger with MySQL, Node, Express, Handlebars and a homemade ORM (yum!)
+This application allows you to create a burger logger with MySQL, Node, Express, Handlebars and a homemade ORM.
 
+<br>
+ <img src="screenshot.JPG" alt="screenshot"> 
+<br>
+<br>
 
 ## Installation
 1. Run npm install to perform the installation.
