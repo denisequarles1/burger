@@ -1,38 +1,56 @@
-// Create express connection and run node server
-var express = require("express");
-var exphbs = require("express-handlebars");
-var methodOverride = require("method-override");
-
-var PORT = process.env.PORT || 8080;
+var express = require('express');
+var bodyParser = require('body-parser');
+var methodOverride = require('method-override');
+var timeout = require('connect-timeout');
+var morgan = require('morgan');
+var fs = require('fs');
+var path = require('path');
 
 var app = express();
 
-// Serve static content for the app from the "public" directory in the application directory.
-// This is a level of abstraction to hide credentials from user
-app.use(express.static('public'));
+//Express static uses whatever domain name/public
+// app.use(express.static(__dirname + '/public'));
+app.use("/static", express.static("public")); //Handlebars likes this one better
+// Timeout
+app.use(timeout(15000));
+app.use(haltOnTimedout);
 
-// Parse application body as JSON
-app.use(express.urlencoded({
-  extended: false
-}));
-app.use(express.json());
+function haltOnTimedout(req, res, next) {
+    if (!req.timedout) next();
+}
 
-// the main page is always displayed
+//Sets up morgan for logging
+// create a write stream (in append mode)
+var accessLogStream = fs.createWriteStream(path.join(__dirname, 'access.log'), { flags: 'a' });
+
+// setup the logger (writes to the file)
+app.use(morgan('combined', { stream: accessLogStream }));
+
+//This sets up body-parser
+// parse application/x-www-form-urlencoded 
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(haltOnTimedout);
+
+//This is setting up method-override 
+// override with POST having ?_method=DELETE
 app.use(methodOverride('_method'));
-app.engine("handlebars", exphbs({
-  defaultLayout: "main"
+app.use(haltOnTimedout);
+
+//sets up express-handlebars
+var exphbs = require('express-handlebars');
+app.engine('handlebars', exphbs({
+    defaultLayout: 'main'
 }));
-app.set("view engine", "handlebars");
+app.set('view engine', 'handlebars');
 
-// Import routes and give the server access to them.
-// Norm is to call it "var = routes"
-var routes = require("./controllers/burgers_controller.js");
+//Setting up the routes
+var routes = require('./controllers/burgers_controllers.js');
 
-// Use express routes defined
-app.use("/", routes);
+app.use('/', routes);
+app.use('/update', routes);
+app.use('/create', routes);
+app.use(haltOnTimedout);
 
-// Start our server so that it can begin listening to client requests.
-app.listen(PORT, function () {
-  // Log (server-side) when our server has started
-  console.log("Server listening on: http://localhost:" + PORT);
-});
+//sets up the port as a variable and listens to it
+var port = process.env.PORT || 3000;
+app.listen(port, () => console.log("Listening on port %s", port));

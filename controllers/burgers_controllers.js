@@ -1,47 +1,43 @@
-// Routes 
-var express = require("express");
-
-// Use router method off of express object to control routes in the application
+//Set up Dependencies
+var express = require('express');
 var router = express.Router();
+var burger = require('../models/burger.js');
 
-// Import the model (burger.js) to use its database functions.
-var burger = require("../models/burger.js");
+//get route -> index
+router.get('/', function(req, res) {
+    res.redirect('/burgers');
+});
 
-// Create all our routes and set up logic within those routes where required.
-// This is the JS object/data which is getting passed to view engine (in this case, handlebars)
-// Handlebars renders html file index.handlebars and rendering the object burgers
-router.get("/", function (req, res) {
-    burger.selectAll(function (data) {
-        var hbsObject = {
-            burgers: data
-          };
-        console.log(hbsObject);
-        res.render("index", hbsObject);
+router.get('/burgers', function(req, res) {
+    //express callback response by calling burger.selectAllBurger
+    burger.all(function(burger_data) {
+        //wrapper for orm.js that using MySQL query callback will return burger_data, render to index with handlebar
+        res.render('index', { burger_data });
     });
 });
 
-router.post("/burgers", function (req, res) {
-    burger.insertOne([
-        "burger_name"
-    ], [
-        req.body.burger_name
-    ], function () {
-        res.redirect("/");
+//post route -> back to index
+router.post('/burgers/create', function(req, res) {
+    if (req.body.burger_name == '') {
+        console.log('No burger name entered');
+        res.redirect('/');
+    } else {
+        //takes the request object using it as input for buger.addBurger
+        burger.create(req.body.burger_name, function(result) {
+            //wrapper for orm.js that using MySQL insert callback will return a log to console, render back to index with handle
+            console.log(result);
+            res.redirect('/');
+        });
+    }
+});
+
+//put route -> back to index
+router.put('/burgers/update', function(req, res) {
+    burger.update(req.body.burger_id, function(result) {
+        //wrapper for orm.js that using MySQL update callback will return a log to console, render back to index with handle
+        console.log(result);
+        res.redirect('/');
     });
 });
 
-router.put("/burgers/:id", function (req, res) {
-    var condition = "id = " + req.params.id;
-
-    // console.log("condition", condition);
-
-    burger.updateOne({
-        devoured: true
-    }, condition, function (data) {
-        res.redirect("/");
-
-    });
-});
-
-// Export routes for server.js to use.
 module.exports = router;
